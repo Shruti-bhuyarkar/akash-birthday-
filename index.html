@@ -169,6 +169,18 @@
   }
   .hugBtn:active{transform:scale(0.94);}
   .hugNote{margin-top:12px; font-size:14px; color:#4a3a63; min-height:20px;}
+
+  .musicToggle{
+    position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); right:16px;
+    z-index:4;
+    width:42px; height:42px;
+    border-radius:50%;
+    border:1px solid rgba(0,0,0,0.08);
+    background:rgba(255,255,255,0.85);
+    font-size:18px;
+    cursor:pointer;
+    box-shadow:0 6px 16px -6px rgba(0,0,0,0.25);
+  }
 </style>
 </head>
 <body>
@@ -260,7 +272,8 @@
 
 </div>
 
-<div class="tapHint" id="tapHint">💛 tap anywhere to send some love</div>
+<div class="tapHint" id="tapHint">💛 tap anywhere to send some love (and start the music)</div>
+<button id="musicToggle" class="musicToggle">🔈</button>
 
 <script>
 /* ---------------- fireworks + confetti engine (emoji + colored shapes) ---------------- */
@@ -357,8 +370,83 @@ function loop(){
 }
 loop();
 
+/* ---------------- gentle generated background music (no external file needed) ---------------- */
+let audioCtx = null;
+let masterGain = null;
+let musicStarted = false;
+let musicMuted = false;
+
+function playTone(freq, startOffset, duration, type, peak){
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(g);
+  g.connect(masterGain);
+  const now = audioCtx.currentTime + startOffset;
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(peak, now + duration * 0.2);
+  g.gain.linearRampToValueAtTime(0, now + duration);
+  osc.start(now);
+  osc.stop(now + duration + 0.05);
+}
+
+const chords = [
+  [261.63, 329.63, 392.00], // C E G
+  [220.00, 261.63, 329.63], // A C E
+  [174.61, 220.00, 261.63], // F A C
+  [196.00, 246.94, 293.66], // G B D
+];
+let chordIndex = 0;
+function padLoop(){
+  if(!musicStarted) return;
+  const chord = chords[chordIndex % chords.length];
+  chordIndex++;
+  chord.forEach(f => playTone(f, 0, 3.7, 'triangle', 0.05));
+  setTimeout(padLoop, 3700);
+}
+
+/* "Happy Birthday to You" — public domain melody, played softly like a music box */
+const birthdaySong = [
+  [392.00,0.3],[392.00,0.3],[440.00,0.6],[392.00,0.6],[523.25,0.6],[493.88,1.2],
+  [392.00,0.3],[392.00,0.3],[440.00,0.6],[392.00,0.6],[587.33,0.6],[523.25,1.2],
+  [392.00,0.3],[392.00,0.3],[783.99,0.6],[659.25,0.6],[523.25,0.6],[493.88,0.6],[440.00,1.2],
+  [698.46,0.3],[698.46,0.3],[659.25,0.6],[523.25,0.6],[587.33,0.6],[523.25,1.4]
+];
+function playBirthdaySongLoop(){
+  if(!musicStarted) return;
+  let t = 0;
+  birthdaySong.forEach(([freq,dur])=>{
+    playTone(freq, t, dur*0.92, 'triangle', 0.065);
+    t += dur;
+  });
+  setTimeout(playBirthdaySongLoop, (t + 1.4) * 1000);
+}
+
+function startMusic(){
+  if(musicStarted) return;
+  musicStarted = true;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = musicMuted ? 0 : 1;
+  masterGain.connect(audioCtx.destination);
+  padLoop();
+  playBirthdaySongLoop();
+  document.getElementById('musicToggle').textContent = musicMuted ? '🔇' : '🔊';
+}
+
+const musicToggle = document.getElementById('musicToggle');
+musicToggle.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  if(!musicStarted){ startMusic(); return; }
+  musicMuted = !musicMuted;
+  masterGain.gain.value = musicMuted ? 0 : 1;
+  musicToggle.textContent = musicMuted ? '🔇' : '🔊';
+});
+
 /* tap/click anywhere sends a little burst of hearts — a small personal gesture */
 function onTap(e){
+  startMusic();
   const p = e.touches ? e.touches[0] : e;
   spawnHeartsAt(p.clientX, p.clientY);
   const hint = document.getElementById('tapHint');
@@ -434,6 +522,7 @@ function playScene(n){
 const cakeWrap = document.getElementById('cakeWrap');
 cakeWrap.addEventListener('click', (e)=>{
   e.stopPropagation();
+  startMusic();
   if(candleBlown) return;
   candleBlown = true;
   document.getElementById('flame').classList.add('out');
@@ -447,6 +536,7 @@ cakeWrap.addEventListener('click', (e)=>{
 const hugBtn = document.getElementById('hugBtn');
 hugBtn.addEventListener('click', (e)=>{
   e.stopPropagation();
+  startMusic();
   launchFirework(e.clientX, e.clientY, 40);
   spawnHeartsAt(e.clientX, e.clientY - 30, 14);
   document.getElementById('hugNote').textContent = 'sending you the biggest hug 🤗💛';
