@@ -174,14 +174,14 @@ const NAME="Akash";                                    // his name / nickname
 const BIRTHDAY=new Date('1997-10-12T00:00:00');       // his birth date & year (for age + counter)
 const LETTER="Happy Birthday, my love! Another year older, and somehow even more wonderful. I wish I could wrap up all the happiness in the world and hand it to you, because you deserve every bit of it. Thank you for the laughs, the patience, the late-night talks and for simply being you. Today is yours, so eat the cake, make the wish and know that I'm the luckiest person to celebrate you. I love you! 💙";
 const PHOTOS=[                                         // add as many as you like: put files next to this page
- {src:"photo1.jpg",cap:"Us 💙"},{src:"photo2.jpg",cap:"Best day"},{src:"photo3.jpg",cap:"My favourite smile"},
- {src:"photo4.jpg",cap:"Adventure time"},{src:"photo5.jpg",cap:"Forever"}];
+ {src:"photo1.jpeg",cap:"My Pookie 😘"},{src:"photo2.jpeg",cap:"Us 🫰"},{src:"photo3.jpeg",cap:"My favourite smile"},
+ {src:"photo4.jpeg",cap:"Office Adventure 🤞"},{src:"photo5.jpeg",cap:"Forever Mine 🤗"}];
 const WISHES=["May this year bring you everything you've been dreaming of ✨","I wish you endless laughter and zero stress 😄","May every goal you chase turn into a win 🏆","Wishing you health, peace and lots of cake 🍰","And may I be right next to you for all of it 💞","You are loved more than you know 💙"];
 const GIFT="A surprise date night, planned by me 🍽️";   // what's under the scratch card
 const COUPONS=["🍕 One free dinner of your choice","🤗 A hug anytime, no questions asked","🎬 You pick the movie, I won't complain","💆 One long relaxing massage","📞 A 'no phone, just us' evening"];
 /* ====================== */
 const $=id=>document.getElementById(id), cols=['#ff5d9e','#ffd166','#2ee6d6','#8b5cf6','#ff8a3d','#5dade2'];
-$('nm').innerHTML='Happy Birthday,<br>'+NAME+'!';
+$('nm').innerHTML='Happy Birthday,<br>'+'Akash'+'!';
 const now=new Date();let age=now.getFullYear()-BIRTHDAY.getFullYear();
 if(now<new Date(now.getFullYear(),BIRTHDAY.getMonth(),BIRTHDAY.getDate()))age--;$('age').textContent=age;
 
